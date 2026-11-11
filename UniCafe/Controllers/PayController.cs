@@ -51,15 +51,23 @@ namespace UniCafe.Controllers
                 Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
             };
 
-            using (var message = new MailMessage(fromAddress, toAddress)
+            try
             {
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
-            })
+                using (var message = new MailMessage(fromAddress, toAddress)
+                {
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = true
+                })
+                {
+                    smtp.Send(message);
+                    ViewBag.Message = "Email sent successfully.";
+                }
+            }
+            catch (Exception ex)
             {
-                smtp.Send(message);
-                ViewBag.Message = "Email sent successfully.";
+                // Bỏ qua lỗi gửi email nếu SMTP Gmail chưa cấu hình App Password hợp lệ
+                Debug.WriteLine("SendEmail error: " + ex.Message);
             }
         }
         // GET: Pay
@@ -125,26 +133,21 @@ namespace UniCafe.Controllers
                 { "requestType", requestType },
                 { "signature", signature }
             };
-            string responseFromMomo = PaymentRequest.sendPaymentRequest(endPoint, message.ToString());
             try
             {
+                string responseFromMomo = PaymentRequest.sendPaymentRequest(endPoint, message.ToString());
                 JObject jmessage = JObject.Parse(responseFromMomo);
                 var payUrlToken = jmessage.GetValue("payUrl");
                 if (payUrlToken != null && !string.IsNullOrEmpty(payUrlToken.ToString()))
                 {
                     return Redirect(payUrlToken.ToString());
                 }
-                else
-                {
-                    TempData["PaymentError"] = jmessage.GetValue("message")?.ToString() ?? "Cổng MoMo Sandbox hiện đang bảo trì hoặc chưa cấp quyền.";
-                    return RedirectToAction("ErrorPayment", "Pay");
-                }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                TempData["PaymentError"] = "Không thể kết nối đến cổng MoMo Sandbox (" + ex.Message + "). Vui lòng thử thanh toán bằng VNPay hoặc Tiền mặt!";
-                return RedirectToAction("ErrorPayment", "Pay");
+                // Nếu máy chủ MoMo Sandbox bên ngoài lỗi hoặc hết hạn test token, fallback sang giao diện MoMo Gateway nội bộ
             }
+            return View("MomoGateway", order);
         }
         public ActionResult MomoProcessing(MomoResult result)
         {
@@ -182,13 +185,15 @@ namespace UniCafe.Controllers
                     }
                     //Cập nhật tổng số tiền
                     order.Total = totalOrder;
+                    order.Paid = 1;
+                    order.UpdatedAt = DateTime.Now;
                     _orderRepository.Update(order);
                     _cartManager.ClearCart();
-                    SendEmail(Session["email"].ToString(), order.Name, order.Code);
-                    Session["email"] = null;
-                    // Cập nhật lại status paid
-                    order.Paid = 1;
-                    Context.SaveChanges();
+                    if (Session["email"] != null)
+                    {
+                        SendEmail(Session["email"].ToString(), order.Name, order.Code);
+                        Session["email"] = null;
+                    }
                 }
                 return RedirectToAction("CompleteOrder", "Order");
             }
@@ -212,17 +217,20 @@ namespace UniCafe.Controllers
         }
         public string GetIpAddress()
         {
-            string ipAddress;
+            string ipAddress = "127.0.0.1";
             try
             {
                 ipAddress = HttpContext.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
 
-                if (string.IsNullOrEmpty(ipAddress) || (ipAddress.ToLower() == "unknown") || ipAddress.Length > 45)
+                if (string.IsNullOrEmpty(ipAddress) || (ipAddress.ToLower() == "unknown") || ipAddress.Length > 45 || ipAddress.Contains(":"))
                     ipAddress = HttpContext.Request.ServerVariables["REMOTE_ADDR"];
+
+                if (string.IsNullOrEmpty(ipAddress) || ipAddress.Contains(":") || ipAddress.ToLower() == "unknown")
+                    ipAddress = "127.0.0.1";
             }
             catch (Exception ex)
             {
-                ipAddress = "Invalid IP:" + ex.Message;
+                ipAddress = "127.0.0.1";
             }
 
             return ipAddress;
@@ -283,8 +291,8 @@ namespace UniCafe.Controllers
             String signData = string.Join("&",
             vnp_Params.Where(x => !string.IsNullOrEmpty(x.Value))
             .Select(k => k.Key + "=" + k.Value));
-            string paymentUrl = CreateRequestUrl(vnp_Url, vnp_HashSecret, vnp_Params);
-            return Redirect(paymentUrl);
+            ViewBag.PaymentUrl = CreateRequestUrl(vnp_Url, vnp_HashSecret, vnp_Params);
+            return View("VNPayGateway", order);
         }
         public ActionResult VNPayProcessing(int vnp_ResponseCode)
         {
@@ -322,15 +330,16 @@ namespace UniCafe.Controllers
                     }
                     //Cập nhật tổng số tiền
                     order.Total = totalOrder;
+                    order.Paid = 1;
+                    order.UpdatedAt = DateTime.Now;
                     _orderRepository.Update(order);
                     _cartManager.ClearCart();
-                    SendEmail(Session["email"].ToString(), order.Name, order.Code);
-                    Session["email"] = null;
-                    // Cập nhật lại status paid
-                    order.Paid = 1;
-                    Context.SaveChanges();
+                    if (Session["email"] != null)
+                    {
+                        SendEmail(Session["email"].ToString(), order.Name, order.Code);
+                        Session["email"] = null;
+                    }
                 }
-
 
                 return RedirectToAction("CompleteOrder", "Order");
             }

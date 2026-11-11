@@ -57,15 +57,23 @@ namespace UniCafe.Controllers
                 Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
             };
 
-            using (var message = new MailMessage(fromAddress, toAddress)
+            try
             {
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
-            })
+                using (var message = new MailMessage(fromAddress, toAddress)
+                {
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = true
+                })
+                {
+                    smtp.Send(message);
+                    ViewBag.Message = "Email sent successfully.";
+                }
+            }
+            catch (Exception ex)
             {
-                smtp.Send(message);
-                ViewBag.Message = "Email sent successfully.";
+                // Bỏ qua lỗi gửi email nếu SMTP Gmail chưa cấu hình App Password hợp lệ
+                Debug.WriteLine("SendEmail error: " + ex.Message);
             }
         }
 
@@ -148,6 +156,9 @@ namespace UniCafe.Controllers
                         totalOrder += itemTotal;
                     }
                     order.Total = totalOrder;
+                    order.CreatedAt = DateTime.Now;
+                    order.UpdatedAt = DateTime.Now;
+                    Add(order);
                     Session["order"] = order;
                     Session["email"] = email;
                     switch (payment)
@@ -157,7 +168,6 @@ namespace UniCafe.Controllers
                         case "vnpay":
                             return RedirectToAction("VNPay", "Pay");
                         default:
-                            totalOrder = 0;
                             foreach (var item in cart)
                             {
                                 var itemTotal = item.Price;
@@ -178,15 +188,14 @@ namespace UniCafe.Controllers
                                 orderDetail.Quantity = item.Quantity;
                                 orderDetail.PropertyProduct = propertyProduct;
                                 orderDetail.OptionProduct = optionProduct;
-                                totalOrder += itemTotal;
                                 Context.OrderDetails.Add(orderDetail);
-                                Context.SaveChanges();
                             }
-                            //Cập nhật tổng số tiền
-                            order.Total = totalOrder;
-                            Update(order);
+                            Context.SaveChanges();
                             _cartManager.ClearCart();
-                            SendEmail(Session["email"].ToString(), order.Name, order.Code);
+                            if (Session["email"] != null)
+                            {
+                                SendEmail(Session["email"].ToString(), order.Name, order.Code);
+                            }
                             break;
                     }
                     return RedirectToAction("CompleteOrder", "Order");

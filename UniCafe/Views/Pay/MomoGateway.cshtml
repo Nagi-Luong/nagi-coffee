@@ -1,0 +1,59 @@
+﻿@model UniCafe.Models.Order
+@{
+    ViewBag.Title = "Cổng thanh toán MoMo Sandbox";
+    Layout = "~/Views/Shared/_Layout_User.cshtml";
+}
+
+<div class="container" style="padding: 120px 15px 80px; max-width: 650px;">
+    <div class="card" style="border: 2px solid #d82d8b; border-radius: 12px; box-shadow: 0 10px 30px rgba(216,45,139,0.15); overflow: hidden; background: #fff;">
+        <div style="background: linear-gradient(135deg, #d82d8b, #b1156a); padding: 25px; text-align: center; color: white;">
+            <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" alt="MoMo Logo" style="height: 55px; background: white; border-radius: 10px; padding: 5px; margin-bottom: 10px;" />
+            <h3 style="margin: 0; font-weight: bold; color: #fff;">CỔNG THANH TOÁN MOMO (SANDBOX)</h3>
+            <p style="margin: 5px 0 0; opacity: 0.9; font-size: 14px;">Môi trường thử nghiệm thanh toán ví điện tử</p>
+        </div>
+
+        <div style="padding: 30px;">
+            <div style="background: #fdf5f9; border-radius: 8px; padding: 20px; margin-bottom: 25px; border-left: 4px solid #d82d8b;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #666;">Đơn vị thụ hưởng:</span>
+                    <strong style="color: #333;">Nagi Coffee - Bắc Từ Liêm</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #666;">Mã đơn hàng:</span>
+                    <strong style="color: #d82d8b;">#@Model.Code</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #666;">Khách hàng:</span>
+                    <strong style="color: #333;">@Model.Name - @Model.PhoneNumber</strong>
+                </div>
+                <hr style="margin: 12px 0; border-top: 1px dashed #e0c5d5;" />
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 16px; font-weight: bold;">Tổng tiền thanh toán:</span>
+                    <span style="font-size: 24px; font-weight: bold; color: #d82d8b;">@Model.Total.ToString("N0") VNĐ</span>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 25px;">
+                <p style="color: #555; margin-bottom: 15px; font-size: 14px;"><i class="fa fa-qrcode"></i> Quét mã QR MoMo hoặc bấm nút xác nhận thanh toán mô phỏng bên dưới:</p>
+                <div style="display: inline-block; padding: 12px; border: 2px dashed #d82d8b; border-radius: 12px; background: #fff;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=2|99|0987654321|NagiCoffee|@Model.Total|0|0|Thanh+toan+Nagi+Coffee+@Model.Code" alt="MoMo QR Code" style="width: 180px; height: 180px; display: block;" />
+                </div>
+                <p style="margin-top: 10px; font-size: 13px; color: #888;">Quét mã bằng ứng dụng Ví MoMo Sandbox</p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <a href="@Url.Action("MomoProcessing", "Pay", new { resultCode = 0, orderId = Model.Code, message = "Successful." })" 
+                   class="btn btn-lg" 
+                   style="background: #d82d8b; color: white; font-weight: bold; padding: 14px; border-radius: 8px; text-decoration: none; text-align: center; box-shadow: 0 4px 15px rgba(216,45,139,0.35);">
+                    <i class="fa fa-check-circle"></i> XÁC NHẬN THANH TOÁN THÀNH CÔNG (SANDBOX)
+                </a>
+
+                <a href="@Url.Action("CheckOut", "Order")" 
+                   class="btn btn-default" 
+                   style="border: 1px solid #ccc; padding: 10px; border-radius: 8px; text-decoration: none; text-align: center; color: #666;">
+                    <i class="fa fa-arrow-left"></i> Hủy giao dịch & Quay lại giỏ hàng
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

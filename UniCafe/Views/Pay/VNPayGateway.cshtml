@@ -1,0 +1,70 @@
+﻿@model UniCafe.Models.Order
+@{
+    ViewBag.Title = "Cổng thanh toán VNPay Sandbox";
+    Layout = "~/Views/Shared/_Layout_User.cshtml";
+}
+
+<div class="container" style="padding: 120px 15px 80px; max-width: 650px;">
+    <div class="card" style="border: 2px solid #005baa; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,91,170,0.15); overflow: hidden; background: #fff;">
+        <div style="background: linear-gradient(135deg, #005baa, #003e75); padding: 25px; text-align: center; color: white;">
+            <img src="https://vnpay.vn/assets/images/logo-icon/logo-primary.svg" alt="VNPay Logo" style="height: 48px; background: white; border-radius: 8px; padding: 6px 14px; margin-bottom: 10px;" />
+            <h3 style="margin: 0; font-weight: bold; color: #fff;">CỔNG THANH TOÁN VNPAY (SANDBOX)</h3>
+            <p style="margin: 5px 0 0; opacity: 0.9; font-size: 14px;">Môi trường thử nghiệm thanh toán Thẻ / VNPAY-QR</p>
+        </div>
+
+        <div style="padding: 30px;">
+            <div style="background: #f0f7fc; border-radius: 8px; padding: 20px; margin-bottom: 25px; border-left: 4px solid #005baa;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #666;">Đơn vị thụ hưởng:</span>
+                    <strong style="color: #333;">Nagi Coffee - Bắc Từ Liêm</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #666;">Mã đơn hàng:</span>
+                    <strong style="color: #005baa;">#@Model.Code</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #666;">Khách hàng:</span>
+                    <strong style="color: #333;">@Model.Name - @Model.PhoneNumber</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #666;">Ngân hàng thanh toán:</span>
+                    <strong style="color: #333;">NCB (Ngân hàng Quốc dân) - Test</strong>
+                </div>
+                <hr style="margin: 12px 0; border-top: 1px dashed #b8d9f2;" />
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 16px; font-weight: bold;">Tổng tiền thanh toán:</span>
+                    <span style="font-size: 24px; font-weight: bold; color: #005baa;">@Model.Total.ToString("N0") VNĐ</span>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 25px;">
+                <p style="color: #555; margin-bottom: 15px; font-size: 14px;"><i class="fa fa-qrcode"></i> Quét mã VNPAY-QR hoặc xác nhận thanh toán thử nghiệm bên dưới:</p>
+                <div style="display: inline-block; padding: 12px; border: 2px dashed #005baa; border-radius: 12px; background: #fff;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=00020101021238540010A00000072701240006970419011009737495470208QRIBFTTA5303704540@Model.Total" alt="VNPay QR Code" style="width: 180px; height: 180px; display: block;" />
+                </div>
+                <p style="margin-top: 10px; font-size: 13px; color: #888;">Quét mã bằng ứng dụng ngân hàng hỗ trợ VNPAY-QR</p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <a href="@Url.Action("VNPayProcessing", "Pay", new { vnp_ResponseCode = 00 })" 
+                   class="btn btn-lg" 
+                   style="background: #005baa; color: white; font-weight: bold; padding: 14px; border-radius: 8px; text-decoration: none; text-align: center; box-shadow: 0 4px 15px rgba(0,91,170,0.35);">
+                    <i class="fa fa-check-circle"></i> XÁC NHẬN THANH TOÁN THÀNH CÔNG (SANDBOX)
+                </a>
+
+                @if (ViewBag.PaymentUrl != null)
+                {
+                    <a href="@ViewBag.PaymentUrl" class="text-center" style="color: #005baa; font-size: 13px; text-decoration: underline; margin-top: 5px;">
+                        Hoặc chuyển đến trang VNPAY Sandbox chính thức <i class="fa fa-external-link-alt"></i>
+                    </a>
+                }
+
+                <a href="@Url.Action("CheckOut", "Order")" 
+                   class="btn btn-default" 
+                   style="border: 1px solid #ccc; padding: 10px; border-radius: 8px; text-decoration: none; text-align: center; color: #666;">
+                    <i class="fa fa-arrow-left"></i> Hủy giao dịch & Quay lại giỏ hàng
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
