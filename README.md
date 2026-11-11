@@ -1,4 +1,4 @@
-# ☕ Coffee Shop E-Commerce Platform
+# ☕ Nagi Coffee - E-Commerce Platform
 
 A full-stack e-commerce web platform for coffee & beverage retail, built on **ASP.NET MVC 5**, **Entity Framework 6 (Code First)**, and **Microsoft SQL Server**. The application integrates domestic payment gateways (**VNPay**, **MoMo**) and implements modern enterprise software patterns including **Repository Pattern**, **Unit of Work**, and **In-Memory Caching**.
 
