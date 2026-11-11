@@ -1,0 +1,58 @@
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+}
+<div class="row">
+    <div class="col-12">
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fa fa-chart-area"></i> THỐNG KÊ HỆ THỐNG
+                </h3>
+            </div>
+            <div class="card-body">
+                <script src="https://www.gstatic.com/charts/loader.js"></script>
+                <script type="text/javascript">
+                    google.charts.load('current', {
+                        'packages': ['corechart']
+                    });
+                    google.charts.setOnLoadCallback(function() {
+                        var salesData = JSON.parse('@Html.Raw(Json.Encode(ViewBag.SalesStatistics))');
+                        if (salesData && salesData.length > 1) {
+                            drawChart(salesData, '\u0044\u006F\u0061\u006E\u0068\u0020\u0074\u0068\u0075\u0020\u0074\u0068\u0065\u006F\u0020\u0074\u0068\u00E1\u006E\u0067\u0020\u0028\u0056\u004E\u0044\u0029', 'salesStatisticsChart', 'LineChart');
+                        } else {
+                            document.getElementById('salesStatisticsChart').innerHTML = '<div class="alert alert-light text-center"><i class="fa fa-info-circle"></i> Chưa có dữ liệu doanh thu (hãy đặt thử một đơn hàng để xem biểu đồ).</div>';
+                        }
+
+                        var paymentData = JSON.parse('@Html.Raw(Json.Encode(ViewBag.PaymentMethodStatistics))');
+                        if (paymentData && paymentData.length > 1) {
+                            drawChart(paymentData, '\u0050\u0068\u01B0\u01A1\u006E\u0067\u0020\u0074\u0068\u1EE9\u0063\u0020\u0074\u0068\u0061\u006E\u0068\u0020\u0074\u006F\u00E1\u006E', 'paymentMethodStatisticsChart', 'PieChart');
+                        } else {
+                            document.getElementById('paymentMethodStatisticsChart').innerHTML = '<div class="alert alert-light text-center"><i class="fa fa-info-circle"></i> Chưa có dữ liệu phương thức thanh toán.</div>';
+                        }
+                    });
+
+                    function drawChart(chartData, title, chartId, typeChart = 'ColumnChart') {
+                        var data = google.visualization.arrayToDataTable(chartData);
+
+                        var options = {
+                            title: title,
+                            curveType: 'function',
+                            legend: {
+                                position: 'bottom'
+                            }
+                        };
+
+                        var chart = new google.visualization[typeChart](document.getElementById(chartId));
+                        chart.draw(data, options);
+                    }
+                </script>
+
+                <div id="salesStatisticsChart"></div>
+                <div id="paymentMethodStatisticsChart"></div>
+            </div>
+        </div>
+    </div>
+</div>
+            
