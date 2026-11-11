@@ -126,8 +126,25 @@ namespace UniCafe.Controllers
                 { "signature", signature }
             };
             string responseFromMomo = PaymentRequest.sendPaymentRequest(endPoint, message.ToString());
-            JObject jmessage = JObject.Parse(responseFromMomo);
-            return Redirect(jmessage.GetValue("payUrl").ToString());
+            try
+            {
+                JObject jmessage = JObject.Parse(responseFromMomo);
+                var payUrlToken = jmessage.GetValue("payUrl");
+                if (payUrlToken != null && !string.IsNullOrEmpty(payUrlToken.ToString()))
+                {
+                    return Redirect(payUrlToken.ToString());
+                }
+                else
+                {
+                    TempData["PaymentError"] = jmessage.GetValue("message")?.ToString() ?? "Cổng MoMo Sandbox hiện đang bảo trì hoặc chưa cấp quyền.";
+                    return RedirectToAction("ErrorPayment", "Pay");
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["PaymentError"] = "Không thể kết nối đến cổng MoMo Sandbox (" + ex.Message + "). Vui lòng thử thanh toán bằng VNPay hoặc Tiền mặt!";
+                return RedirectToAction("ErrorPayment", "Pay");
+            }
         }
         public ActionResult MomoProcessing(MomoResult result)
         {

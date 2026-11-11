@@ -17,10 +17,10 @@ namespace UniCafe.Services.Payment.Momo
         {
             try
             {
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
                 HttpWebRequest httpWReq = (HttpWebRequest)WebRequest.Create(endpoint);
 
                 var postData = postJsonString;
-
                 var data = Encoding.UTF8.GetBytes(postData);
 
                 httpWReq.ProtocolVersion = HttpVersion.Version11;
@@ -40,7 +40,6 @@ namespace UniCafe.Services.Payment.Momo
 
                 using (var reader = new StreamReader(response.GetResponseStream()))
                 {
-
                     string temp = null;
                     while ((temp = reader.ReadLine()) != null)
                     {
@@ -49,10 +48,16 @@ namespace UniCafe.Services.Payment.Momo
                 }
 
                 return jsonResponse;
-
             }
             catch (WebException e)
             {
+                if (e.Response != null)
+                {
+                    using (var reader = new StreamReader(e.Response.GetResponseStream()))
+                    {
+                        return reader.ReadToEnd();
+                    }
+                }
                 return e.Message;
             }
         }

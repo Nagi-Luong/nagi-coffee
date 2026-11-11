@@ -4,9 +4,16 @@
     Layout = "~/Views/Shared/_Layout_User.cshtml";
 }
 
-<div style="padding: 200px 50px 100px">
+<div style="padding: 160px 50px 100px">
     <center>
-        <h2 style="color: #c19942;">LỖI THANH TOÁN</h2>
-        <p>Bạn hãy thử thanh toán lại <a href="@Url.Action("CheckOut", "Order")">tại đây</a></p>
+        <h2 style="color: #c19942;"><i class="fa fa-exclamation-triangle"></i> THÔNG BÁO THANH TOÁN</h2>
+        @if (TempData["PaymentError"] != null)
+        {
+            <div class="alert alert-warning" style="max-width: 600px; margin: 20px auto; font-size: 16px;">
+                @TempData["PaymentError"]
+            </div>
+        }
+        <p style="font-size: 16px;">Bạn có thể chọn phương thức <b>VNPay (Thẻ ATM / VNPAY-QR)</b> hoặc <b>Tiền mặt (COD)</b> để hoàn tất đặt hàng.</p>
+        <a href="@Url.Action("CheckOut", "Order")" class="button-default" style="display: inline-block; margin-top: 15px;">Quay lại thanh toán</a>
     </center>
 </div>
